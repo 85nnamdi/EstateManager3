@@ -1,0 +1,6 @@
+/admin.properties
+/de/
+/hibernate.cfg.xml
+/hibernate.db2.cfg.xml
+/hibernate.h2.cfg.xml
+/log4j.properties

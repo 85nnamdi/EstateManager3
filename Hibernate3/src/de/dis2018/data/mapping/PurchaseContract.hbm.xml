@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC
+          "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+          "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<hibernate-mapping>
+    <class name="de.dis2018.data.entity.PurchaseContract" table="purchaseContract">
+    	<id name="id" column="id">
+            <generator class="increment" />
+        </id>
+        <set name="house">
+	        <key column="productSerialNumber" not-null="true"/>
+	        <one-to-many class="House"/>
+    	</set>
+        <property name="interstRate" type="integer" column="interestRate"/>
+        <property name="noOfInstallments" type="integer" column="noOfInstallments"/>
+    </class>
+</hibernate-mapping>

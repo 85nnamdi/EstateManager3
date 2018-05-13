@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC
+          "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+          "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<hibernate-mapping>
+    <class name="de.dis2018.data.entity.Contract" table="contract">
+    	<id name="id" column="id">
+            <generator class="increment" />
+        </id>
+        <property name="contractNo" type="integer" column="contractNo"/>
+        <property name="date" type="date" column="date"/>
+        <property name="place" type="string" column="place"/>
+    </class>
+</hibernate-mapping>
+
