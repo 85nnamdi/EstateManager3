@@ -2,6 +2,12 @@ package de.dis2018.editor;
 
 import java.util.Set;
 
+import javax.swing.JOptionPane;
+
+import org.hibernate.Session;
+import org.hibernate.SessionFactory;
+import org.hibernate.cfg.Configuration;
+
 import de.dis2018.core.EstateService;
 import de.dis2018.data.entity.Apartment;
 import de.dis2018.data.entity.EstateAgent;
@@ -20,10 +26,20 @@ public class EstateEditor {
 
     ///Will be registered as manager for the estates
     private EstateAgent manager;
-
+    
+    //initialize the sessionFactory
+    private SessionFactory sessionFactory; 
+    
     public EstateEditor(EstateService service, EstateAgent manager) {
         this.service = service;
         this.manager = manager;
+        
+        try {
+            sessionFactory = new Configuration().configure().buildSessionFactory();
+        	}catch(Exception ex)
+        	{
+        		JOptionPane.showMessageDialog(null, ex.getMessage().toString());
+        	}
     }
 
     /**
@@ -84,8 +100,10 @@ public class EstateEditor {
      * Abfrage der Daten für ein neues House
      */
     public void newHouse() {
+    	Session session = sessionFactory.openSession();
+    	session.beginTransaction();
         House h = new House();
-
+        
         h.setCity(FormUtil.readString("City"));
         h.setPostalcode(FormUtil.readInt("Postalcode"));
         h.setStreet(FormUtil.readString("Street"));
@@ -97,12 +115,18 @@ public class EstateEditor {
         h.setManager(this.manager);
 
         service.addHouse(h);
+        session.save(h);
+        session.getTransaction().commit();
+        session.close();
     }
 
     /**
      * Edits a house after the user has selected it
      */
     public void editHouse() {
+    	Session session = sessionFactory.openSession();
+    	session.beginTransaction();
+    	
         //Search all houses managed by the estate agent
         Set<House> haeuser = service.getAllHousesForEstateAgent(manager);
 
@@ -151,6 +175,10 @@ public class EstateEditor {
                 h.setPrice(newPrice);
 
             h.setGarden(newGarden);
+            
+            session.save(h);
+            session.getTransaction().commit();
+            session.close();
         }
     }
 
@@ -159,6 +187,8 @@ public class EstateEditor {
      * house after selection
      */
     public void deleteHouse() {
+    	Session session = sessionFactory.openSession();
+    	session.beginTransaction();
         //Search all houses managed by the estate agent
         Set<House> haeuser = service.getAllHousesForEstateAgent(manager);
 
@@ -170,13 +200,19 @@ public class EstateEditor {
         if(id != HouseSelectionMenu.BACK) {
             House h = service.getHouseById(id);
             service.deleteHouse(h);
+            session.save(h);
+            session.getTransaction().commit();
         }
+        session.close();
     }
 
     /**
      * Requesting the data for a new apartment
      */
     public void newAppartment() {
+    	Session session = sessionFactory.openSession();
+    	session.beginTransaction();
+    	
         Apartment w = new Apartment();
 
         w.setCity(FormUtil.readString("City"));
@@ -191,12 +227,18 @@ public class EstateEditor {
         w.setManager(this.manager);
 
         service.addApartment(w);
+        session.save(w);
+        session.getTransaction().commit();
+        session.close();
     }
 
     /**
      * Edits an appartment after the user has selected it
      */
     public void editApartment() {
+    	Session session = sessionFactory.openSession();
+    	session.beginTransaction();
+    	
         //Search all apartments managed by the estate agent
         Set<Apartment> apartmenten = service.getAllApartmentsForEstateAgent(manager);
 
@@ -247,6 +289,10 @@ public class EstateEditor {
 
             w.setKitchen(newEbk);
             w.setBalcony(newBalcony);
+            
+            session.save(w);
+            session.getTransaction().commit();
+            session.close();
         }
     }
 
@@ -255,6 +301,9 @@ public class EstateEditor {
      * corresponding apartment after selection.
      */
     public void deleteApartment() {
+    	Session session = sessionFactory.openSession();
+    	session.beginTransaction();
+    	
         //Search all apartments managed by the estate agent
         Set<Apartment> apartments = service.getAllApartmentsForEstateAgent(manager);
 
@@ -266,6 +315,9 @@ public class EstateEditor {
         if(id != HouseSelectionMenu.BACK) {
             Apartment w = service.getApartmentByID(id);
             service.deleteApartment(w);
+            session.save(w);
+            session.getTransaction().commit();
         }
+        session.close();
     }
 }
