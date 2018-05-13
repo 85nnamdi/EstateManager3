@@ -1,5 +1,11 @@
 package de.dis2018.editor;
 
+import javax.swing.JOptionPane;
+
+import org.hibernate.Session;
+import org.hibernate.SessionFactory;
+import org.hibernate.cfg.Configuration;
+
 import de.dis2018.core.EstateService;
 import de.dis2018.data.entity.Person;
 import de.dis2018.menu.Menu;
@@ -12,9 +18,17 @@ import de.dis2018.util.FormUtil;
 public class PersonEditor {
     //Estate service to be used
     private EstateService service;
-
+    private SessionFactory sessionFactory; 
+    
+    
     public PersonEditor(EstateService service) {
         this.service = service;
+        try {
+            sessionFactory = new Configuration().configure().buildSessionFactory();
+        	}catch(Exception ex)
+        	{
+        		JOptionPane.showMessageDialog(null, ex.getMessage().toString());
+        	}
     }
 
     /**
@@ -59,14 +73,21 @@ public class PersonEditor {
      * the corresponding data.
      */
     public void newPerson() {
-        Person p = new Person();
-
+        Session session = sessionFactory.openSession();
+    	session.beginTransaction();
+    	Person p = new Person();
+    			
+    			
         p.setFirstname(FormUtil.readString("Firstname"));
         p.setName(FormUtil.readString("Name"));
         p.setAddress(FormUtil.readString("Address"));
         service.addPerson(p);
-
+        
+        session.save(p);
+        session.getTransaction().commit();
+        
         System.out.println(p.getFirstname()+" "+p.getName()+" with the ID "+p.getId()+" was created.");
+        session.close();
     }
 
     /**
@@ -74,9 +95,12 @@ public class PersonEditor {
      */
     public void editPerson() {
         //Person selection menu
+    	 Session session = sessionFactory.openSession();
+     	session.beginTransaction();
+     	
         Menu personSelectionMenu = new PersonSelectionMenu("Edit Person", service.getAllPersons());
         int id = personSelectionMenu.show();
-
+        
         //Edit person?
         if(id != PersonSelectionMenu.BACK) {
             //Load person
@@ -95,7 +119,12 @@ public class PersonEditor {
                 p.setName(newName);
             if(!newAddresss.equals(""))
                 p.setAddress(newAddresss);
+            
+            session.save(p);
+            session.getTransaction().commit();
         }
+        
+        session.close();
     }
 
     /**
@@ -103,6 +132,9 @@ public class PersonEditor {
      * the corresponding ID.
      */
     public void deletePerson() {
+    	 Session session = sessionFactory.openSession();
+      	session.beginTransaction();
+      	
         //Selection of the person
         Menu personSelectionMenu = new PersonSelectionMenu("Delete Person", service.getAllPersons());
         int id = personSelectionMenu.show();
@@ -111,6 +143,10 @@ public class PersonEditor {
         if(id != PersonSelectionMenu.BACK) {
             Person p = service.getPersonById(id);
             service.deletePerson(p);
+            session.save(p);
+            session.getTransaction().commit();
         }
+        
+        session.close();
     }
 }
