@@ -3,6 +3,12 @@ package de.dis2018.editor;
 import java.util.Iterator;
 import java.util.Set;
 
+import javax.swing.JOptionPane;
+
+import org.hibernate.Session;
+import org.hibernate.SessionFactory;
+import org.hibernate.cfg.Configuration;
+
 import de.dis2018.core.EstateService;
 import de.dis2018.data.entity.Apartment;
 import de.dis2018.data.entity.EstateAgent;
@@ -23,13 +29,23 @@ import de.dis2018.util.Helper;
 public class ContractEditor {
     //Estate service to be used
     private EstateService service;
-
+    
     //Estate agents who manage estates for which contracts may be concluded.
     private EstateAgent manager;
-
+    
+    //instantiate SessionFactory
+    private SessionFactory sessionFactory; 
+    
     public ContractEditor(EstateService service, EstateAgent manager) {
         this.service = service;
         this.manager = manager;
+        
+        try {
+            sessionFactory = new Configuration().configure().buildSessionFactory();
+        	}catch(Exception ex)
+        	{
+        		JOptionPane.showMessageDialog(null, ex.getMessage().toString());
+        	}
     }
 
     /**
@@ -108,6 +124,9 @@ public class ContractEditor {
      * Menu for creating a new tenancy contract
      */
     public void newTenancyContract() {
+    	Session session = sessionFactory.openSession();
+    	session.beginTransaction();
+    	
         //Find all the estate agent's apartments
         Set<Apartment> apartments = service.getAllApartmentsForEstateAgent(manager);
 
@@ -138,8 +157,11 @@ public class ContractEditor {
                 m.setAdditionalCosts(FormUtil.readInt("Additional Costs"));
 
                 service.addTenancyContract(m);
-
+                session.save(m);
+                session.getTransaction().commit();
                 System.out.println("Tenancy contract with the ID \"+k.getId()+\" was created");
+                
+                session.close();
             }
         }
     }
@@ -148,6 +170,9 @@ public class ContractEditor {
      * Menu for creating a new purchase contract
      */
     public void newPurchaseContract() {
+    	Session session = sessionFactory.openSession();
+    	session.beginTransaction();
+    	
         //Find all the estate agent's houses
         Set<House> houses = service.getAllHousesForEstateAgent(manager);
 
@@ -177,8 +202,10 @@ public class ContractEditor {
                 k.setInterestRate(FormUtil.readInt("Intrest Rate"));
 
                 service.addPurchaseContract(k);
-
+                session.save(k);
+                session.getTransaction().commit();
                 System.out.println("Purchase contract with the ID "+k.getId()+" was created.");
+                session.close();
             }
         }
     }
