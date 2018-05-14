@@ -105,37 +105,49 @@ public class PersonEditor {
      * Edits a person after the user has selected it.
      */
     public void editPerson() {
+    	Session session = sessionFactory.openSession();
+    	try
+    	{
+    	     	session.beginTransaction();
+    	     	
+    	        Menu personSelectionMenu = new PersonSelectionMenu("Edit Person", service.getAllPersons());
+    	        int id = personSelectionMenu.show();
+    	        
+    	        //Edit person?
+    	        if(id != PersonSelectionMenu.BACK) {
+    	            //Load person
+    	            Person p = service.getPersonById(id);
+    	            System.out.println(p.getFirstname()+" "+p.getName()+" is being edited. Empty fields remain unchanged.");
+
+    	            //Reading in new data
+    	            String newFirstname = FormUtil.readString("Firstname ("+p.getFirstname()+")");
+    	            String newName = FormUtil.readString("Name ("+p.getName()+")");
+    	            String newAddresss = FormUtil.readString("Address ("+p.getAddress()+")");
+
+    	            //Set new data
+    	            if(!newFirstname.equals(""))
+    	                p.setFirstname(newFirstname);
+    	            if(!newName.equals(""))
+    	                p.setName(newName);
+    	            if(!newAddresss.equals(""))
+    	                p.setAddress(newAddresss);
+    	            
+    	            session.save(p);
+    	            session.getTransaction().commit();
+    	        }
+    	}
+    	catch(Exception ex)
+    	{
+    		session.getTransaction().rollback();
+    		JOptionPane.showMessageDialog(null, ex.getMessage());
+    	}
+    	finally
+    	{
+    		session.close();
+    	}
         //Person selection menu
-    	 Session session = sessionFactory.openSession();
-     	session.beginTransaction();
-     	
-        Menu personSelectionMenu = new PersonSelectionMenu("Edit Person", service.getAllPersons());
-        int id = personSelectionMenu.show();
-        
-        //Edit person?
-        if(id != PersonSelectionMenu.BACK) {
-            //Load person
-            Person p = service.getPersonById(id);
-            System.out.println(p.getFirstname()+" "+p.getName()+" is being edited. Empty fields remain unchanged.");
 
-            //Reading in new data
-            String newFirstname = FormUtil.readString("Firstname ("+p.getFirstname()+")");
-            String newName = FormUtil.readString("Name ("+p.getName()+")");
-            String newAddresss = FormUtil.readString("Address ("+p.getAddress()+")");
-
-            //Set new data
-            if(!newFirstname.equals(""))
-                p.setFirstname(newFirstname);
-            if(!newName.equals(""))
-                p.setName(newName);
-            if(!newAddresss.equals(""))
-                p.setAddress(newAddresss);
-            
-            session.save(p);
-            session.getTransaction().commit();
-        }
         
-        session.close();
     }
 
     /**
@@ -144,20 +156,31 @@ public class PersonEditor {
      */
     public void deletePerson() {
     	 Session session = sessionFactory.openSession();
-      	session.beginTransaction();
+    	 try
+    	 {
+    		 session.beginTransaction();
       	
-        //Selection of the person
-        Menu personSelectionMenu = new PersonSelectionMenu("Delete Person", service.getAllPersons());
-        int id = personSelectionMenu.show();
+	        //Selection of the person
+	        Menu personSelectionMenu = new PersonSelectionMenu("Delete Person", service.getAllPersons());
+	        int id = personSelectionMenu.show();
+	
+	        //Delete, if "back" has not been selected
+	        if(id != PersonSelectionMenu.BACK) {
+	            Person p = service.getPersonById(id);
+	            service.deletePerson(p);
+	            session.save(p);
+	            session.getTransaction().commit();
+	        }
+    	 }
+    	 catch(Exception ex)
+    	 {
+    		 session.getTransaction().rollback();
+    		 JOptionPane.showMessageDialog(null, ex.getMessage());
+    	 }
+    	 finally
+    	 {
+    		 session.close();
+    	 }
 
-        //Delete, if "back" has not been selected
-        if(id != PersonSelectionMenu.BACK) {
-            Person p = service.getPersonById(id);
-            service.deletePerson(p);
-            session.save(p);
-            session.getTransaction().commit();
-        }
-        
-        session.close();
     }
 }
