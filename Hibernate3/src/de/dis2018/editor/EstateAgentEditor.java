@@ -77,53 +77,84 @@ public class EstateAgentEditor {
     
     public void newEstateAgent() {
     	Session session = sessionFactory.openSession();
-    	session.beginTransaction();
-    	
-        EstateAgent m = new EstateAgent();
+    	try
+    	{
+        	session.beginTransaction();
+        	
+            EstateAgent m = new EstateAgent();
 
-        m.setName(FormUtil.readString("Name"));
-        m.setAddress(FormUtil.readString("Address"));
-        m.setLogin(FormUtil.readString("Login"));
-        m.setPassword(FormUtil.readString("Password"));
-        service.addEstateAgent(m);
-        session.save(m);
-        session.getTransaction().commit();
-        
-        
-        System.out.println("Estate agent with ID "+m.getId()+" was created.");
-        session.close();
+            m.setName(FormUtil.readString("Name"));
+            m.setAddress(FormUtil.readString("Address"));
+            m.setLogin(FormUtil.readString("Login"));
+            m.setPassword(FormUtil.readString("Password"));
+            service.addEstateAgent(m);
+            session.save(m);
+            session.getTransaction().commit();
+            System.out.println("Estate agent with ID "+m.getId()+" was created.");
+    	}
+    	catch(Exception ex)
+    	{
+    		session.getTransaction().rollback();
+    		JOptionPane.showMessageDialog(null, ex.getMessage());
+    	}
+    	finally
+    	{
+    		   session.close();
+    	}
+
+           
     }
 
     /**
      * Edits a estate agent after the user has selected it
      */
     public void editEstateAgent() {
-        //Menu for selecting the estate agent
-        Menu maklerSelectionMenu = new EstateAgentSelectionMenu("Edit estate agent", service.getAllEstateAgents());
-        int id = maklerSelectionMenu.show();
+    	Session session = sessionFactory.openSession();
+    	try
+    	{
+    		session.beginTransaction();        
+    		//Menu for selecting the estate agent
+	        Menu maklerSelectionMenu = new EstateAgentSelectionMenu("Edit estate agent", service.getAllEstateAgents());
+	        int id = maklerSelectionMenu.show();
+	        
+	        //If not selected "back", edit estate agent
+	        if(id != EstateAgentSelectionMenu.BACK) {
+	            //Load estate agent
+	            EstateAgent m = service.getEstateAgentByID(id);
+	            System.out.println("Estate agent "+m.getName()+"  is being edited. Empty fields remain unchanged.");
+	
+	            //Get the new data
+	            String new_name = FormUtil.readString("Name ("+m.getName()+")");
+	            String new_address = FormUtil.readString("Addresss ("+m.getAddress()+")");
+	            String new_login = FormUtil.readString("Login ("+m.getLogin()+")");
+	            String new_password = FormUtil.readString("Password ("+m.getPassword()+")");
+	            
+	            //Set new data
+	            if(!new_name.equals(""))
+	                m.setName(new_name);
+	            if(!new_address.equals(""))
+	                m.setAddress(new_address);
+	            if(!new_login.equals(""))
+	                m.setLogin(new_login);
+	            if(!new_password.equals(""))
+	                m.setPassword(new_password);
+	            service.addEstateAgent(m);
+	            session.save(m);
+	            session.getTransaction().commit();
+	            
+	        }
+    	}
+    	catch(Exception ex)
+    	{
+    		session.getTransaction().rollback();
+    		JOptionPane.showMessageDialog(null, ex.getMessage());
+    	}
+    	finally
+    	{
+    		session.close();
+    	}
+    	
 
-        //If not selected "back", edit estate agent
-        if(id != EstateAgentSelectionMenu.BACK) {
-            //Load estate agent
-            EstateAgent m = service.getEstateAgentByID(id);
-            System.out.println("Estate agent "+m.getName()+"  is being edited. Empty fields remain unchanged.");
-
-            //Get the new data
-            String new_name = FormUtil.readString("Name ("+m.getName()+")");
-            String new_address = FormUtil.readString("Addresss ("+m.getAddress()+")");
-            String new_login = FormUtil.readString("Login ("+m.getLogin()+")");
-            String new_password = FormUtil.readString("Password ("+m.getPassword()+")");
-
-            //Set new data
-            if(!new_name.equals(""))
-                m.setName(new_name);
-            if(!new_address.equals(""))
-                m.setAddress(new_address);
-            if(!new_login.equals(""))
-                m.setLogin(new_login);
-            if(!new_password.equals(""))
-                m.setPassword(new_password);
-        }
     }
 
     /**
@@ -131,13 +162,28 @@ public class EstateAgentEditor {
      */
     public void deleteEstateAgent() {
         //Menu for selecting the estate agent
-        Menu maklerSelectionMenu = new EstateAgentSelectionMenu("Delete estate agent", service.getAllEstateAgents());
-        int id = maklerSelectionMenu.show();
+    	Session session = sessionFactory.openSession();
+    	try
+    	{
+    		session.beginTransaction();
+            Menu maklerSelectionMenu = new EstateAgentSelectionMenu("Delete estate agent", service.getAllEstateAgents());
+            int id = maklerSelectionMenu.show();
 
-        //If not selected "back", delete estate agent
-        if(id != EstateAgentSelectionMenu.BACK) {
-            EstateAgent m = service.getEstateAgentByID(id);
-            service.deleteEstateAgent(m);
-        }
+            //If not selected "back", delete estate agent
+            if(id != EstateAgentSelectionMenu.BACK) {
+                EstateAgent m = service.getEstateAgentByID(id);
+                service.deleteEstateAgent(m);
+            }
+    	}
+    	catch(Exception ex)
+    	{
+    		session.getTransaction().commit();
+    		JOptionPane.showConfirmDialog(null, ex.getMessage());
+    	}
+    	finally
+    	{
+    		session.close();
+    	}
+
     }
 }
