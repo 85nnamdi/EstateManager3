@@ -119,51 +119,60 @@ public class ContractEditor {
         }
     }
 
-
     /**
      * Menu for creating a new tenancy contract
      */
     public void newTenancyContract() {
     	Session session = sessionFactory.openSession();
-    	session.beginTransaction();
-    	
-        //Find all the estate agent's apartments
-        Set<Apartment> apartments = service.getAllApartmentsForEstateAgent(manager);
+    	try
+    	{
+    		session.beginTransaction();
+            //Find all the estate agent's apartments
+            Set<Apartment> apartments = service.getAllApartmentsForEstateAgent(manager);
 
-        //Selection menu for the apartments
-        AppartmentSelectionMenu asm = new AppartmentSelectionMenu("Select apartment for contract", apartments);
-        int wid = asm.show();
+            //Selection menu for the apartments
+            AppartmentSelectionMenu asm = new AppartmentSelectionMenu("Select apartment for contract", apartments);
+            int wid = asm.show();
 
-        //If no abort: Selection of the person
-        if(wid != AppartmentSelectionMenu.BACK) {
-            //Load all persons
-            Set<Person> personen = service.getAllPersons();
+            //If no abort: Selection of the person
+            if(wid != AppartmentSelectionMenu.BACK) {
+                //Load all persons
+                Set<Person> personen = service.getAllPersons();
 
-            //Menu to select the person
-            PersonSelectionMenu psm = new PersonSelectionMenu("Select person for contract", personen);
-            int pid = psm.show();
+                //Menu to select the person
+                PersonSelectionMenu psm = new PersonSelectionMenu("Select person for contract", personen);
+                int pid = psm.show();
 
-            //If no abort: Request contract data and create contract
-            if(pid != PersonSelectionMenu.BACK) {
-                TenancyContract m = new TenancyContract();
+                //If no abort: Request contract data and create contract
+                if(pid != PersonSelectionMenu.BACK) {
+                    TenancyContract m = new TenancyContract();
 
-                m.setApartment(service.getApartmentByID(wid));
-                m.setContractPartner(service.getPersonById(pid));
-                m.setContractNo(FormUtil.readInt("Contract No"));
-                m.setDate(FormUtil.readDate("Date (dd.MM.yyyy)"));
-                m.setPlace(FormUtil.readString("City"));
-                m.setStartDate(FormUtil.readDate("Start Date (dd.MM.yyyy)"));
-                m.setDuration(FormUtil.readInt("Duration in months"));
-                m.setAdditionalCosts(FormUtil.readInt("Additional Costs"));
+                    m.setApartment(service.getApartmentByID(wid));
+                    m.setContractPartner(service.getPersonById(pid));
+                    m.setContractNo(FormUtil.readInt("Contract No"));
+                    m.setDate(FormUtil.readDate("Date (dd.MM.yyyy)"));
+                    m.setPlace(FormUtil.readString("City"));
+                    m.setStartDate(FormUtil.readDate("Start Date (dd.MM.yyyy)"));
+                    m.setDuration(FormUtil.readInt("Duration in months"));
+                    m.setAdditionalCosts(FormUtil.readInt("Additional Costs"));
 
-                service.addTenancyContract(m);
-                session.save(m);
-                session.getTransaction().commit();
-                System.out.println("Tenancy contract with the ID \"+k.getId()+\" was created");
-                
-                session.close();
+                    service.addTenancyContract(m);
+                    session.save(m);
+                    session.getTransaction().commit();
+                    System.out.println("Tenancy contract with the ID \"+k.getId()+\" was created");
+                }
             }
-        }
+    	}
+    	catch(Exception ex)
+    	{
+    		session.getTransaction().rollback();
+    		JOptionPane.showMessageDialog(null, ex.getMessage());
+    	}
+    	finally
+    	{
+    		session.close();
+    	}
+    	
     }
 
     /**
@@ -171,42 +180,54 @@ public class ContractEditor {
      */
     public void newPurchaseContract() {
     	Session session = sessionFactory.openSession();
-    	session.beginTransaction();
-    	
-        //Find all the estate agent's houses
-        Set<House> houses = service.getAllHousesForEstateAgent(manager);
+    	try
+    	{
+    		session.beginTransaction();
+        	
+            //Find all the estate agent's houses
+            Set<House> houses = service.getAllHousesForEstateAgent(manager);
 
-        //Selection menu for the House
-        HouseSelectionMenu asm = new HouseSelectionMenu("Select house for contract.", houses);
-        int hid = asm.show();
+            //Selection menu for the House
+            HouseSelectionMenu asm = new HouseSelectionMenu("Select house for contract.", houses);
+            int hid = asm.show();
 
-        //If no abort: Selection of the person
-        if(hid != AppartmentSelectionMenu.BACK) {
-            //Load all persons
-            Set<Person> personen = service.getAllPersons();
+            //If no abort: Selection of the person
+            if(hid != AppartmentSelectionMenu.BACK) {
+                //Load all persons
+                Set<Person> personen = service.getAllPersons();
 
-            //Menu to select the person
-            PersonSelectionMenu psm = new PersonSelectionMenu("Select person for contract", personen);
-            int pid = psm.show();
+                //Menu to select the person
+                PersonSelectionMenu psm = new PersonSelectionMenu("Select person for contract", personen);
+                int pid = psm.show();
 
-            //If no abort: Request contract data and create contract
-            if(pid != PersonSelectionMenu.BACK) {
-                PurchaseContract k = new PurchaseContract();
+                //If no abort: Request contract data and create contract
+                if(pid != PersonSelectionMenu.BACK) {
+                    PurchaseContract k = new PurchaseContract();
 
-                k.setHouse(service.getHouseById(hid));
-                k.setContractPartner(service.getPersonById(pid));
-                k.setContractNo(FormUtil.readInt("Contract No"));
-                k.setDate(FormUtil.readDate("Date (dd.MM.yyyy)"));
-                k.setPlace(FormUtil.readString("City"));
-                k.setNoOfInstallments(FormUtil.readInt("No Of Installments"));
-                k.setInterestRate(FormUtil.readInt("Intrest Rate"));
+                    k.setHouse(service.getHouseById(hid));
+                    k.setContractPartner(service.getPersonById(pid));
+                    k.setContractNo(FormUtil.readInt("Contract No"));
+                    k.setDate(FormUtil.readDate("Date (dd.MM.yyyy)"));
+                    k.setPlace(FormUtil.readString("City"));
+                    k.setNoOfInstallments(FormUtil.readInt("No Of Installments"));
+                    k.setInterestRate(FormUtil.readInt("Intrest Rate"));
 
-                service.addPurchaseContract(k);
-                session.save(k);
-                session.getTransaction().commit();
-                System.out.println("Purchase contract with the ID "+k.getId()+" was created.");
-                session.close();
+                    service.addPurchaseContract(k);
+                    session.save(k);
+                    session.getTransaction().commit();
+                    System.out.println("Purchase contract with the ID "+k.getId()+" was created.");
+                    
+                }
             }
-        }
+    	}
+    	catch(Exception ex)
+    	{
+    		session.getTransaction().rollback();
+    	}
+    	finally
+    	{
+    		session.close();
+    	}
+
     }
 }

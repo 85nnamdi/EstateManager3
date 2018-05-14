@@ -101,23 +101,35 @@ public class EstateEditor {
      */
     public void newHouse() {
     	Session session = sessionFactory.openSession();
-    	session.beginTransaction();
-        House h = new House();
-        
-        h.setCity(FormUtil.readString("City"));
-        h.setPostalcode(FormUtil.readInt("Postalcode"));
-        h.setStreet(FormUtil.readString("Street"));
-        h.setStreetnumber(FormUtil.readString("Streetnumber"));
-        h.setSquareArea(FormUtil.readInt("Square Area"));
-        h.setFloors(FormUtil.readInt("Floors"));
-        h.setPrice(FormUtil.readInt("Price"));
-        h.setGarden(FormUtil.readBoolean("Garden"));
-        h.setManager(this.manager);
-
-        service.addHouse(h);
-        session.save(h);
-        session.getTransaction().commit();
-        session.close();
+    	try
+    	{
+    		session.beginTransaction();
+	        House h = new House();
+	        
+	        h.setCity(FormUtil.readString("City"));
+	        h.setPostalcode(FormUtil.readInt("Postalcode"));
+	        h.setStreet(FormUtil.readString("Street"));
+	        h.setStreetnumber(FormUtil.readString("Streetnumber"));
+	        h.setSquareArea(FormUtil.readInt("Square Area"));
+	        h.setFloors(FormUtil.readInt("Floors"));
+	        h.setPrice(FormUtil.readInt("Price"));
+	        h.setGarden(FormUtil.readBoolean("Garden"));
+	        h.setManager(this.manager);
+	
+	        service.addHouse(h);
+	        session.save(h);
+	        session.getTransaction().commit();
+    	}
+    	catch(Exception ex)
+    	{
+    		session.getTransaction().rollback();
+    		JOptionPane.showMessageDialog(null, ex.getMessage());
+    	}
+    	finally
+    	{
+    		session.close();
+    	}
+    	
     }
 
     /**
@@ -125,61 +137,72 @@ public class EstateEditor {
      */
     public void editHouse() {
     	Session session = sessionFactory.openSession();
-    	session.beginTransaction();
-    	
-        //Search all houses managed by the estate agent
-        Set<House> haeuser = service.getAllHousesForEstateAgent(manager);
+    	try
+    	{
+    		session.beginTransaction();
+    		//Search all houses managed by the estate agent
+            Set<House> haeuser = service.getAllHousesForEstateAgent(manager);
 
-        //Selection menu for the house to be edited
-        HouseSelectionMenu hsm = new HouseSelectionMenu("List of managed houses", haeuser);
-        int id = hsm.show();
+            //Selection menu for the house to be edited
+            HouseSelectionMenu hsm = new HouseSelectionMenu("List of managed houses", haeuser);
+            int id = hsm.show();
 
-        //If the entry "back" was not selected, edit house
-        if(id != HouseSelectionMenu.BACK) {
-            //Load selected house
-            House h = service.getHouseById(id);
+            //If the entry "back" was not selected, edit house
+            if(id != HouseSelectionMenu.BACK) {
+                //Load selected house
+                House h = service.getHouseById(id);
 
-            System.out.println("House "+h.getStreet()+" "+h.getStreetnumber()+", "+h.getPostalcode()+" "+h.getCity()+
-                               " is being edited. Empty fields or input of 0 leaves field unchanged");
+                System.out.println("House "+h.getStreet()+" "+h.getStreetnumber()+", "+h.getPostalcode()+" "+h.getCity()+
+                                   " is being edited. Empty fields or input of 0 leaves field unchanged");
 
-            //Retrieve new data
-            String newCity = FormUtil.readString("City ("+h.getCity()+")");
-            int newPostalcode = FormUtil.readInt("Postalcode ("+h.getPostalcode()+")");
-            String newStreet = FormUtil.readString("Street ("+h.getStreet()+")");
-            String newHouseNummer = FormUtil.readString("Streetnumber ("+h.getStreetnumber()+")");
-            int newSquareArea = FormUtil.readInt("SquareArea ("+h.getSquareArea()+")");
-            int newFloors = FormUtil.readInt("Floors ("+h.getFloors()+")");
-            int newPrice = FormUtil.readInt("Price ("+h.getPrice()+")");
-            boolean newGarden = FormUtil.readBoolean("Garden ("+(h.isGarden() ? "y" : "n")+")");
+                //Retrieve new data
+                String newCity = FormUtil.readString("City ("+h.getCity()+")");
+                int newPostalcode = FormUtil.readInt("Postalcode ("+h.getPostalcode()+")");
+                String newStreet = FormUtil.readString("Street ("+h.getStreet()+")");
+                String newHouseNummer = FormUtil.readString("Streetnumber ("+h.getStreetnumber()+")");
+                int newSquareArea = FormUtil.readInt("SquareArea ("+h.getSquareArea()+")");
+                int newFloors = FormUtil.readInt("Floors ("+h.getFloors()+")");
+                int newPrice = FormUtil.readInt("Price ("+h.getPrice()+")");
+                boolean newGarden = FormUtil.readBoolean("Garden ("+(h.isGarden() ? "y" : "n")+")");
 
-            //Neue Daten setzen
-            if(!newCity.equals(""))
-                h.setCity(newCity);
+                //Neue Daten setzen
+                if(!newCity.equals(""))
+                    h.setCity(newCity);
 
-            if(!newStreet.equals(""))
-                h.setStreet(newStreet);
+                if(!newStreet.equals(""))
+                    h.setStreet(newStreet);
 
-            if(!newHouseNummer.equals(""))
-                h.setStreetnumber(newHouseNummer);
+                if(!newHouseNummer.equals(""))
+                    h.setStreetnumber(newHouseNummer);
 
-            if(newPostalcode != 0)
-                h.setPostalcode(newPostalcode);
+                if(newPostalcode != 0)
+                    h.setPostalcode(newPostalcode);
 
-            if(newSquareArea != 0)
-                h.setSquareArea(newSquareArea);
+                if(newSquareArea != 0)
+                    h.setSquareArea(newSquareArea);
 
-            if(newFloors != 0)
-                h.setFloors(newFloors);
+                if(newFloors != 0)
+                    h.setFloors(newFloors);
 
-            if(newPrice != 0)
-                h.setPrice(newPrice);
+                if(newPrice != 0)
+                    h.setPrice(newPrice);
 
-            h.setGarden(newGarden);
-            
-            session.save(h);
-            session.getTransaction().commit();
-            session.close();
-        }
+                h.setGarden(newGarden);
+                
+                session.save(h);
+                session.getTransaction().commit();
+            }
+    	}
+    	catch(Exception ex)
+    	{
+    		session.getTransaction().rollback();
+    		JOptionPane.showMessageDialog(null, ex.getMessage());
+    	}
+    	finally
+    	{
+    		session.close();
+    	}
+                    
     }
 
     /**
@@ -188,22 +211,33 @@ public class EstateEditor {
      */
     public void deleteHouse() {
     	Session session = sessionFactory.openSession();
-    	session.beginTransaction();
-        //Search all houses managed by the estate agent
-        Set<House> haeuser = service.getAllHousesForEstateAgent(manager);
+    	try
+    	{
+    		session.beginTransaction();
+    		//Search all houses managed by the estate agent
+            Set<House> haeuser = service.getAllHousesForEstateAgent(manager);
 
-        //Selection menu for the house to be edited
-        HouseSelectionMenu hsm = new HouseSelectionMenu("List of managed houses", haeuser);
-        int id = hsm.show();
+            //Selection menu for the house to be edited
+            HouseSelectionMenu hsm = new HouseSelectionMenu("List of managed houses", haeuser);
+            int id = hsm.show();
 
-        //If the entry "back" was not selected, delete House
-        if(id != HouseSelectionMenu.BACK) {
-            House h = service.getHouseById(id);
-            service.deleteHouse(h);
-            session.save(h);
-            session.getTransaction().commit();
-        }
-        session.close();
+            //If the entry "back" was not selected, delete House
+            if(id != HouseSelectionMenu.BACK) {
+                House h = service.getHouseById(id);
+                service.deleteHouse(h);
+                session.save(h);
+                session.getTransaction().commit();
+            }
+    	}
+    	catch(Exception ex)
+    	{
+    		session.getTransaction().rollback();
+    		JOptionPane.showMessageDialog(null, ex.getMessage());
+    	}
+    	finally
+    	{
+    		session.close();
+    	}
     }
 
     /**
@@ -211,25 +245,35 @@ public class EstateEditor {
      */
     public void newAppartment() {
     	Session session = sessionFactory.openSession();
-    	session.beginTransaction();
-    	
-        Apartment w = new Apartment();
+    	try
+    	{
+    		session.beginTransaction();
+    		Apartment w = new Apartment();
 
-        w.setCity(FormUtil.readString("City"));
-        w.setPostalcode(FormUtil.readInt("Postalcode"));
-        w.setStreet(FormUtil.readString("Street"));
-        w.setStreetnumber(FormUtil.readString("Streetnumber"));
-        w.setSquareArea(FormUtil.readInt("Square Area"));
-        w.setFloor(FormUtil.readInt("Floor"));
-        w.setRent(FormUtil.readInt("Rent"));
-        w.setKitchen(FormUtil.readBoolean("Kitchen"));
-        w.setBalcony(FormUtil.readBoolean("Balcony"));
-        w.setManager(this.manager);
+            w.setCity(FormUtil.readString("City"));
+            w.setPostalcode(FormUtil.readInt("Postalcode"));
+            w.setStreet(FormUtil.readString("Street"));
+            w.setStreetnumber(FormUtil.readString("Streetnumber"));
+            w.setSquareArea(FormUtil.readInt("Square Area"));
+            w.setFloor(FormUtil.readInt("Floor"));
+            w.setRent(FormUtil.readInt("Rent"));
+            w.setKitchen(FormUtil.readBoolean("Kitchen"));
+            w.setBalcony(FormUtil.readBoolean("Balcony"));
+            w.setManager(this.manager);
 
-        service.addApartment(w);
-        session.save(w);
-        session.getTransaction().commit();
-        session.close();
+            service.addApartment(w);
+            session.save(w);
+            session.getTransaction().commit();
+    	}
+    	catch(Exception ex)
+    	{
+    		session.getTransaction().rollback();
+    		JOptionPane.showMessageDialog(null, ex.getMessage());
+    	}
+    	finally
+    	{
+    		session.close();
+    	}
     }
 
     /**
@@ -237,63 +281,74 @@ public class EstateEditor {
      */
     public void editApartment() {
     	Session session = sessionFactory.openSession();
-    	session.beginTransaction();
+    	try
+    	{
+    		session.beginTransaction();
+    		//Search all apartments managed by the estate agent
+            Set<Apartment> apartmenten = service.getAllApartmentsForEstateAgent(manager);
+
+            //Selection menu for the apartment to be edited
+            AppartmentSelectionMenu asm = new AppartmentSelectionMenu("List of managed apartments", apartmenten);
+            int id = asm.show();
+
+            //If the entry "back" was not selected, edit apartment
+            if(id != AppartmentSelectionMenu.BACK) {
+                //Load apartment
+                Apartment w = service.getApartmentByID(id);
+
+                System.out.println("Apartment "+w.getStreet()+" "+w.getStreetnumber()+", "+w.getPostalcode()+" "+w.getCity()
+                                   + " is being edited. Empty fields remain unchanged.");
+
+                //Retrieve new data
+                String newcity = FormUtil.readString("City ("+w.getCity()+")");
+                int newPostalcode = FormUtil.readInt("Postalcode ("+w.getPostalcode()+")");
+                String newStreet = FormUtil.readString("Street ("+w.getStreet()+")");
+                String newHouseNummer = FormUtil.readString("Streetnumber ("+w.getStreetnumber()+")");
+                int newSquareArea = FormUtil.readInt("Square Area ("+w.getSquareArea()+")");
+                int newFloor = FormUtil.readInt("Floor ("+w.getFloor()+")");
+                int newRent = FormUtil.readInt("Rent ("+w.getRent()+")");
+                boolean newEbk = FormUtil.readBoolean("Kitchen ("+(w.isKitchen() ? "y" : "n")+")");
+                boolean newBalcony = FormUtil.readBoolean("Balcony ("+(w.isBalcony() ? "y" : "n")+")");
+
+                //Neue Daten setzen
+                if(!newcity.equals(""))
+                    w.setCity(newcity);
+
+                if(!newStreet.equals(""))
+                    w.setStreet(newStreet);
+
+                if(!newHouseNummer.equals(""))
+                    w.setStreetnumber(newHouseNummer);
+
+                if(newPostalcode != 0)
+                    w.setPostalcode(newPostalcode);
+
+                if(newSquareArea != 0)
+                    w.setSquareArea(newSquareArea);
+
+                if(newFloor != 0)
+                    w.setFloor(newFloor);
+
+                if(newRent != 0)
+                    w.setRent(newRent);
+
+                w.setKitchen(newEbk);
+                w.setBalcony(newBalcony);
+                
+                session.save(w);
+                session.getTransaction().commit();
+            }
+    	}
+    	catch(Exception ex)
+    	{
+    		session.getTransaction().rollback();
+    		JOptionPane.showMessageDialog(null, ex.getMessage());
+    	}
+    	finally
+    	{
+    		session.close();
+    	}
     	
-        //Search all apartments managed by the estate agent
-        Set<Apartment> apartmenten = service.getAllApartmentsForEstateAgent(manager);
-
-        //Selection menu for the apartment to be edited
-        AppartmentSelectionMenu asm = new AppartmentSelectionMenu("List of managed apartments", apartmenten);
-        int id = asm.show();
-
-        //If the entry "back" was not selected, edit apartment
-        if(id != AppartmentSelectionMenu.BACK) {
-            //Load apartment
-            Apartment w = service.getApartmentByID(id);
-
-            System.out.println("Apartment "+w.getStreet()+" "+w.getStreetnumber()+", "+w.getPostalcode()+" "+w.getCity()
-                               + " is being edited. Empty fields remain unchanged.");
-
-            //Retrieve new data
-            String newcity = FormUtil.readString("City ("+w.getCity()+")");
-            int newPostalcode = FormUtil.readInt("Postalcode ("+w.getPostalcode()+")");
-            String newStreet = FormUtil.readString("Street ("+w.getStreet()+")");
-            String newHouseNummer = FormUtil.readString("Streetnumber ("+w.getStreetnumber()+")");
-            int newSquareArea = FormUtil.readInt("Square Area ("+w.getSquareArea()+")");
-            int newFloor = FormUtil.readInt("Floor ("+w.getFloor()+")");
-            int newRent = FormUtil.readInt("Rent ("+w.getRent()+")");
-            boolean newEbk = FormUtil.readBoolean("Kitchen ("+(w.isKitchen() ? "y" : "n")+")");
-            boolean newBalcony = FormUtil.readBoolean("Balcony ("+(w.isBalcony() ? "y" : "n")+")");
-
-            //Neue Daten setzen
-            if(!newcity.equals(""))
-                w.setCity(newcity);
-
-            if(!newStreet.equals(""))
-                w.setStreet(newStreet);
-
-            if(!newHouseNummer.equals(""))
-                w.setStreetnumber(newHouseNummer);
-
-            if(newPostalcode != 0)
-                w.setPostalcode(newPostalcode);
-
-            if(newSquareArea != 0)
-                w.setSquareArea(newSquareArea);
-
-            if(newFloor != 0)
-                w.setFloor(newFloor);
-
-            if(newRent != 0)
-                w.setRent(newRent);
-
-            w.setKitchen(newEbk);
-            w.setBalcony(newBalcony);
-            
-            session.save(w);
-            session.getTransaction().commit();
-            session.close();
-        }
     }
 
     /**
@@ -302,22 +357,33 @@ public class EstateEditor {
      */
     public void deleteApartment() {
     	Session session = sessionFactory.openSession();
-    	session.beginTransaction();
+    	try
+    	{
+    		session.beginTransaction();
+            //Search all apartments managed by the estate agent
+            Set<Apartment> apartments = service.getAllApartmentsForEstateAgent(manager);
+
+            //Selection menu for the apartment to be edited
+            AppartmentSelectionMenu asm = new AppartmentSelectionMenu("List of managed apartments", apartments);
+            int id = asm.show();
+
+            //If the entry "back" was not selected, delete apartment
+            if(id != HouseSelectionMenu.BACK) {
+                Apartment w = service.getApartmentByID(id);
+                service.deleteApartment(w);
+                session.save(w);
+                session.getTransaction().commit();
+            }
+    	}
+    	catch(Exception ex)
+    	{
+    		session.getTransaction().rollback();
+    		JOptionPane.showMessageDialog(null, ex.getMessage());
+    	}
+    	finally
+    	{
+	    	session.close();
+    	}
     	
-        //Search all apartments managed by the estate agent
-        Set<Apartment> apartments = service.getAllApartmentsForEstateAgent(manager);
-
-        //Selection menu for the apartment to be edited
-        AppartmentSelectionMenu asm = new AppartmentSelectionMenu("List of managed apartments", apartments);
-        int id = asm.show();
-
-        //If the entry "back" was not selected, delete apartment
-        if(id != HouseSelectionMenu.BACK) {
-            Apartment w = service.getApartmentByID(id);
-            service.deleteApartment(w);
-            session.save(w);
-            session.getTransaction().commit();
-        }
-        session.close();
     }
 }
