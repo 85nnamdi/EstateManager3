@@ -4,6 +4,7 @@ import javax.swing.JOptionPane;
 
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
+import org.hibernate.Transaction;
 import org.hibernate.cfg.Configuration;
 
 import de.dis2018.core.EstateService;
@@ -73,21 +74,31 @@ public class PersonEditor {
      * the corresponding data.
      */
     public void newPerson() {
-        Session session = sessionFactory.openSession();
-    	session.beginTransaction();
     	Person p = new Person();
-    			
-    			
-        p.setFirstname(FormUtil.readString("Firstname"));
-        p.setName(FormUtil.readString("Name"));
-        p.setAddress(FormUtil.readString("Address"));
-        service.addPerson(p);
-        
-        session.save(p);
-        session.getTransaction().commit();
-        
-        System.out.println(p.getFirstname()+" "+p.getName()+" with the ID "+p.getId()+" was created.");
-        session.close();
+    	
+        Session session = sessionFactory.openSession();
+    	try
+    	{
+    		session.beginTransaction();
+    		p.setFirstname(FormUtil.readString("Firstname"));
+	        p.setName(FormUtil.readString("Name"));
+	        p.setAddress(FormUtil.readString("Address"));
+	        service.addPerson(p);
+	        
+	        session.save(p);
+	        session.getTransaction().commit();
+	        System.out.println(p.getFirstname()+" "+p.getName()+" with the ID "+p.getId()+" was created.");
+    	}
+    	catch(Exception ex)
+    	{
+    		session.getTransaction().rollback();
+    		JOptionPane.showMessageDialog(null, ex.getMessage());
+    	}
+    	finally
+    	{
+    		 session.close();
+    	}
+    	
     }
 
     /**
